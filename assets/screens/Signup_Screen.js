@@ -3,59 +3,66 @@ import { Text, View, Image, TouchableOpacity, TextInput, ScrollView } from 'reac
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import firestore from '@react-native-firebase/firestore';
-
+import Eye from 'react-native-vector-icons/dist/FontAwesome';
+import Modal from 'react-native-modal';
 export default class Signup_Screen extends Component {
+	constructor() {
+		super();
+		this.state = {
+			Pass: '',
+			showPassword: true,
+			name: '',
+			password: '',
+			email: '',
+			Text: '',
+			phone: '',
+			isModalVisible: false,
+			
+		};
+	}
 
-    constructor() {
-        super();
-        this.state = {
-          Pass: '',
-          name:'',
-          password: '',
-          email: '',
-          Text: '',
-          phone:'',
-        };
-      }
+	PostDataToFirebase = () => {
+		firestore().collection('Users').add({
+			email: this.state.email,
+			password: this.state.Pass,
+			name: this.state.name,
+			phone: this.state.phone
+		});
 
-      PostDataToFirebase = () => {
-        firestore()
-          .collection('Users')
-          .add({        
-            email: this.state.email,
-            password: this.state.Pass,
-            name: this.state.name,
-            phone: this.state.phone,
-          })
-        
-        this.props.navigation.navigate('Chat_Screen')
-        alert('SignUp Successfully')
-      }
-    
-      signUpValidation =() => {
-        const { email, Pass, } = this.state;
-        if (email == '' || Pass == '' ) {
-          alert('All fields are required');
-          return;
-        }
-        else if (email != '' && email.includes('@gmail.com') && Pass != '' ) {
-          this.PostDataToFirebase()
-        }
-        // } else if (Pass ){
-        //   alert('password lenght must be 8 charaters long');
-        //   return;
-        // }
-        // else if (Pass.length <= 8 ) {
-        //   alert('password lenght must be 8 charaters long');
-        //   return;
-        // }
-        else{
-          alert('Not a valid email');
-          return;
-        }
-      }
+		this.props.navigation.navigate('Chat_Screen');
+		alert('SignUp Successfully');
+	};
+
+	signUpValidation = () => {
+		const { email, Pass } = this.state;
+		if (email == '' || Pass == '') {
+			alert('All fields are required');
+			return;
+		} else if (email != '' && email.includes('@gmail.com') && Pass != '') {
+			this.PostDataToFirebase();
+		} else {
+			// } else if (Pass ){
+			//   alert('password lenght must be 8 charaters long');
+			//   return;
+			// }
+			// else if (Pass.length <= 8 ) {
+			//   alert('password lenght must be 8 charaters long');
+			//   return;
+			// }
+			alert('Not a valid email');
+			return;
+		}
+	};
+
+	showPassword = () => {
+		this.setState({ showPassword: !this.state.showPassword });
+	};
 
 	render() {
+		
+		const toggleModal = () => {
+			setModalVisible(!isModalVisible);
+		};
 		return (
 			<View style={{ flex: 1, backgroundColor: 'white' }}>
 				<View style={{ alignItems: 'center', padding: 10 }}>
@@ -85,29 +92,31 @@ export default class Signup_Screen extends Component {
 								backgroundColor: '#FBFBFB',
 								flexDirection: 'row'
 							}}
-                            onChangeText={text =>  this.setState({ name: text })}
+							onChangeText={(text) => this.setState({ name: text })}
 						/>
 						<View style={{ alignSelf: 'flex-end', right: '10%', top: -55 }}>
 							<Feather name="user" size={20} color="grey" />
 						</View>
 					</View>
 
-					<View style={{}}>
-						<Text style={{ left: 35, fontSize: 12, color: 'grey' }}>Email</Text>
-					</View>
-					<View>
-						<TextInput
-							style={{
-								marginHorizontal: 30,
-								marginVertical: 0,
-								borderRadius: 10,
-								backgroundColor: '#FBFBFB',
-								flexDirection: 'row'
-							}}
-                            onChangeText={text =>  this.setState({ email: text })}
-						/>
-						<View style={{ alignSelf: 'flex-end', right: '10%', top: -40 }}>
-							<MaterialCommunityIcons name="email-outline" size={20} color="grey" />
+					<View style={{ marginTop: -10 }}>
+						<View>
+							<Text style={{ left: 35, fontSize: 12, color: 'grey' }}>Email</Text>
+						</View>
+						<View>
+							<TextInput
+								style={{
+									marginHorizontal: 30,
+									marginVertical: 0,
+									borderRadius: 10,
+									backgroundColor: '#FBFBFB',
+									flexDirection: 'row'
+								}}
+								onChangeText={(text) => this.setState({ email: text })}
+							/>
+							<View style={{ alignSelf: 'flex-end', right: '10%', top: -35 }}>
+								<MaterialCommunityIcons name="email-outline" size={20} color="grey" />
+							</View>
 						</View>
 					</View>
 
@@ -123,58 +132,69 @@ export default class Signup_Screen extends Component {
 								backgroundColor: '#FBFBFB',
 								flexDirection: 'row'
 							}}
-                            onChangeText={text =>  this.setState({ phone: text })}
+							onChangeText={(text) => this.setState({ phone: text })}
 						/>
 
-						<View style={{ alignSelf: 'flex-end', right: '10%', top: -40 }}>
+						<View style={{ alignSelf: 'flex-end', right: '10%', top: -45 }}>
 							<MaterialCommunityIcons name="cellphone-iphone" size={20} color="grey" />
 						</View>
 					</View>
 
-					<View style={{}}>
-						<Text style={{ left: 35, top: 10, fontSize: 12 }}>Password</Text>
-					</View>
-					<View>
-						<TextInput
-							style={{
-								marginHorizontal: 30,
-								marginVertical: 10,
-								borderRadius: 10,
-								backgroundColor: '#FBFBFB',
-								flexDirection: 'row'
-							}}
-                            onChangeText={txt => this.setState({ Pass: txt })}
-						/>
-						<View style={{ alignSelf: 'flex-end', right: '10%', top: -40 }}>
-							<Feather name="lock" size={20} color="grey" />
+					<View style={{ marginTop: -10 }}>
+						<View style={{}}>
+							<Text style={{ left: 35, top: 10, fontSize: 12 }}>Password</Text>
+						</View>
+						<View>
+							<TextInput
+								style={{
+									marginHorizontal: 30,
+									marginVertical: 10,
+									borderRadius: 10,
+									backgroundColor: '#FBFBFB',
+									flexDirection: 'row'
+								}}
+								onChangeText={(txt) => this.setState({ Pass: txt })}
+								secureTextEntry={this.state.showPassword}
+							/>
+							<View style={{ alignSelf: 'flex-end', right: '10%', top: -45 }}>
+								<Eye
+									name={this.state.showPassword ? 'eye-slash' : 'eye'}
+									size={20}
+									color="grey"
+									onPress={this.showPassword}
+								/>
+							</View>
 						</View>
 					</View>
-				</ScrollView>
 
-				<TouchableOpacity  onPress={() =>
-                  this.signUpValidation()
-                }>
-					<View
-						style={{
-							bottom: 20,
-							padding: 7,
-							marginHorizontal: 30,
-							justifyContent: 'center',
-							alignItems: 'center',
-							borderRadius: 10,
-							backgroundColor: '#4FC3F7'
-						}}
-					>
-						<Text style={{ color: 'white', fontSize: 25 }}>SignUp</Text>
-					</View>
-				</TouchableOpacity>
-				<View style={{ marginBottom: 10 }}>
-					<TouchableOpacity onPress={()=>{this.props.navigation.navigate('Login_Screen')}}>
-						<View style={{ justifyContent: 'center', alignItems: 'center' }}>
-							<Text style={{ color: 'grey' }}>Already have an account?</Text>
+					<TouchableOpacity onPress={() => this.signUpValidation()}>
+						<View
+							style={{
+								bottom: 10,
+								padding: 7,
+								marginHorizontal: 30,
+								justifyContent: 'center',
+								alignItems: 'center',
+								borderRadius: 10,
+								backgroundColor: '#4FC3F7'
+							}}
+						>
+							<Text style={{ color: 'white', fontSize: 25 }}>SignUp</Text>
 						</View>
 					</TouchableOpacity>
-				</View>
+
+					<View style={{}}>
+						<TouchableOpacity
+							onPress={() => {
+								this.props.navigation.navigate('Login_Screen');
+							}}
+						>
+							<View style={{ justifyContent: 'center', alignItems: 'center' }}>
+								<Text style={{ color: 'grey' }}>Already have an account?</Text>
+							</View>
+						</TouchableOpacity>
+					</View>
+				</ScrollView>
 			</View>
 		);
 	}

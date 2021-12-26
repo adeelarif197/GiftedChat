@@ -1,85 +1,93 @@
 import React, { Component, useState } from 'react';
-import { Text, View, Image, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { Text, View, Image, TouchableOpacity, TextInput, ActivityIndicator, Modal } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import firebase from '@react-native-firebase/app'
-import firestore from '@react-native-firebase/firestore'
+import firebase from '@react-native-firebase/app';
+import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Eye from 'react-native-vector-icons/dist/FontAwesome';
+
 export default class Login_Screen extends Component {
+	constructor() {
+		super();
+		this.state = {
+			email: '',
+			password: '',
+			Pass: '',
+			showPassword: true,
+			emailError: '',
+			isValid: false,
+			passwordErrorMessage: '', // password error message
+			loading: false,
+			authUserID: '',
+			setModalVisible: false
+		};
+	}
 
-    constructor() {
-        super();
-        this.state = {
-          email: '',
-          password: '',
-          Pass:'',
-          emailError: '',
-          isValid: false,
-          passwordErrorMessage: '', // password error message
-          loading: false,
-          authUserID: '',
-        };
-      }
-  
-      storeData = async () => {
-        try {
-          const jsonID = JSON.stringify(this.state.authUserID)
-          const jsonEmail = JSON.stringify(this.state.email)
-          const jsonPassword = JSON.stringify(this.state.Pass)
-    
-          await AsyncStorage.setItem('@IDSession', jsonID )
-          console.log('SessionID Stored: ', JSON.parse(jsonID))
-    
-          await AsyncStorage.setItem('@emailSession', jsonEmail )
-          console.log('SessionEmail Stored: ', JSON.parse(jsonEmail))
-    
-          await AsyncStorage.setItem('@passwordSession', jsonPassword )
-          console.log('SessionPassword Stored: ', JSON.parse(jsonPassword))
-          this.props.navigation.navigate('Chat_Screen')
-        } catch (e) {
-          // saving error
-        }
-      }
-    
-      getFirestorData = () => {
-        firestore()
-          .collection('Users').where('email', '==', this.state.email).where('password', '==', this.state.Pass.toString())
-          .get()
-          .then(querySnapshot => {
-    
-            querySnapshot.forEach(documentSnapshot => {
-              console.log('User ID: ', documentSnapshot.id, documentSnapshot.data())
-              this.setState({authUserID: documentSnapshot.id})
-            })
-            
-            if (querySnapshot.size == 0) {
-              alert('please enter valid credentials')
-              console.log('if: ', querySnapshot.size)
-            } else {
-              
-              this.storeData()
-              console.log('Total users: ', querySnapshot.size);
-            }
-          }).catch(err => alert('No Record Found'))
+	storeData = async () => {
+		try {
+			const jsonID = JSON.stringify(this.state.authUserID);
+			const jsonEmail = JSON.stringify(this.state.email);
+			const jsonPassword = JSON.stringify(this.state.Pass);
 
-      }
-    
-      handleValidation = () => {
-        const { email, Pass } = this.state;
-        if (email == '' || Pass == '') {
-          alert('All fields are required');
-          return;
-        }
-        if (email != '' && Pass != '') {
-          this.getFirestorData()
-        }
-        if (Pass.length < 5) {
-          alert('password lenght must be 6 charater long');
-          return;
-        }
-      };
+			await AsyncStorage.setItem('@IDSession', jsonID);
+			console.log('SessionID Stored: ', JSON.parse(jsonID));
+
+			await AsyncStorage.setItem('@emailSession', jsonEmail);
+			console.log('SessionEmail Stored: ', JSON.parse(jsonEmail));
+
+			await AsyncStorage.setItem('@passwordSession', jsonPassword);
+			console.log('SessionPassword Stored: ', JSON.parse(jsonPassword));
+			this.props.navigation.navigate('Chat_Screen');
+		} catch (e) {
+			// saving error
+		}
+	};
+
+	getFirestorData = () => {
+		firestore()
+			.collection('Users')
+			.where('email', '==', this.state.email)
+			.where('password', '==', this.state.Pass.toString())
+			.get()
+			.then((querySnapshot) => {
+				querySnapshot.forEach((documentSnapshot) => {
+					console.log('User ID: ', documentSnapshot.id, documentSnapshot.data());
+					this.setState({ authUserID: documentSnapshot.id });
+				});
+
+				if (querySnapshot.size == 0) {
+					alert('please enter valid credentials');
+					console.log('if: ', querySnapshot.size);
+				} else {
+					this.storeData();
+					console.log('Total users: ', querySnapshot.size);
+				}
+			})
+			.catch((err) => alert('No Record Found'));
+	};
+
+	handleValidation = () => {
+		const { email, Pass } = this.state;
+		if (email == '' || Pass == '') {
+			alert('All fields are required');
+			return;
+		}
+		if (email != '' && Pass != '') {
+			this.getFirestorData();
+		}
+		if (Pass.length < 5) {
+			alert('password lenght must be 6 charater long');
+			return;
+		}
+	};
+
+	showPassword = () => {
+		this.setState({ showPassword: !this.state.showPassword });
+	};
 
 	render() {
+		const {setModalVisible } = this.state 
 		return (
 			<View style={{ flex: 1, backgroundColor: 'white' }}>
 				<View style={{ alignItems: 'center', padding: 10, top: 0 }}>
@@ -107,8 +115,8 @@ export default class Login_Screen extends Component {
 							backgroundColor: '#FBFBFB',
 							flexDirection: 'row'
 						}}
-                        value={this.state.email}
-                        onChangeText={txt => this.setState({ email: txt })}
+						value={this.state.email}
+						onChangeText={(txt) => this.setState({ email: txt })}
 					/>
 					<View style={{}}>
 						<MaterialCommunityIcons
@@ -131,20 +139,27 @@ export default class Login_Screen extends Component {
 							backgroundColor: '#FBFBFB',
 							flexDirection: 'row'
 						}}
-                        value={this.state.Pass}
-                        onChangeText={txt => this.setState({ Pass: txt })}
+						value={this.state.Pass}
+						onChangeText={(txt) => this.setState({ Pass: txt })}
+						secureTextEntry={this.state.showPassword}
 					/>
 					<View style={{}}>
-						<Feather
-							name="lock"
+						<Eye
+							name={this.state.showPassword ? 'eye-slash' : 'eye'}
 							size={20}
 							color="grey"
 							style={{ alignSelf: 'flex-end', right: '10%', top: -65 }}
+							onPress={this.showPassword}
 						/>
 					</View>
 				</View>
 
 				<TouchableOpacity onPress={this.handleValidation}>
+					<Modal
+					
+					>
+						
+					</Modal>
 					<View
 						style={{
 							bottom: 30,
@@ -160,7 +175,11 @@ export default class Login_Screen extends Component {
 					</View>
 				</TouchableOpacity>
 
-				<TouchableOpacity onPress={()=>{this.props.navigation.navigate('Signup_Screen')}}>
+				<TouchableOpacity
+					onPress={() => {
+						this.props.navigation.navigate('Signup_Screen');
+					}}
+				>
 					<View style={{ justifyContent: 'center', alignItems: 'center' }}>
 						<Text style={{ color: 'grey' }}>Not have an account?</Text>
 					</View>
